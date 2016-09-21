@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	gokit "github.com/go-kit/kit/log"
 	"github.com/grafov/kiwi"
 	"github.com/mgutz/logxi/v1"
 	"gopkg.in/inconshreveable/log15.v2"
@@ -315,4 +316,35 @@ func BenchmarkLevelsLog15Complex(b *testing.B) {
 		l.Error("error", "key", 1, "obj", testObject)
 	}
 	b.StopTimer()
+}
+
+func BenchmarkLevelsGokit(b *testing.B) {
+	buf := &bytes.Buffer{}
+	b.SetBytes(2)
+	b.ResetTimer()
+	l := gokit.NewLogfmtLogger(gokit.NewSyncWriter(buf))
+	l = gokit.NewContext(l).With("_n", "bench", "_p", pid)
+	for i := 0; i < b.N; i++ {
+		l.Log("l", "debug", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Log("l", "info", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Log("l", "warn", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Log("l", "error", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+	}
+	b.StopTimer()
+}
+
+func BenchmarkLevelsGokitComplex(b *testing.B) {
+	buf := &bytes.Buffer{}
+	b.SetBytes(2)
+	b.ResetTimer()
+	l := gokit.NewLogfmtLogger(gokit.NewSyncWriter(buf))
+	l = gokit.NewContext(l).With("_n", "bench", "_p", pid)
+	for i := 0; i < b.N; i++ {
+		l.Log("l", "debug", "key", 1, "obj", testObject)
+		l.Log("l", "info", "key", 1, "obj", testObject)
+		l.Log("l", "warn", "key", 1, "obj", testObject)
+		l.Log("l", "error", "key", 1, "obj", testObject)
+	}
+	b.StopTimer()
+
 }
