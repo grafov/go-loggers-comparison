@@ -50,16 +50,14 @@ func toJSON(m map[string]interface{}) string {
 // These tests write out all log levels with concurrency turned on and
 // (mostly) equivalent fields.
 
-func BenchmarkLevelsKiwiTyped(b *testing.B) {
+func BenchmarkLevelsKiwiTyped_Logfmt(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
 	b.ResetTimer()
 	l := kiwi.New()
 	l.With("_n", "bench", "_p", pid)
 	l.WithTimestamp(time.RFC3339)
 	kiwi.LevelName = "l"
-	out := kiwi.UseOutput(buf, kiwi.UseJSON())
-	defer out.Close()
+	out := kiwi.SinkTo(buf, kiwi.UseLogfmt()).Start()
 	for i := 0; i < b.N; i++ {
 		l.AddInt("key", 1).AddFloat64("key2", 3.141592).AddString("key3", "string").AddBool("key4", false).Debug()
 		l.AddInt("key", 1).AddFloat64("key2", 3.141592).AddString("key3", "string").AddBool("key4", false).Info()
@@ -67,18 +65,35 @@ func BenchmarkLevelsKiwiTyped(b *testing.B) {
 		l.AddInt("key", 1).AddFloat64("key2", 3.141592).AddString("key3", "string").AddBool("key4", false).Error()
 	}
 	b.StopTimer()
+	out.Close()
 }
 
-func BenchmarkLevelsKiwiTypedComplex(b *testing.B) {
+func BenchmarkLevelsKiwiTyped_JSON(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
 	b.ResetTimer()
 	l := kiwi.New()
 	l.With("_n", "bench", "_p", pid)
 	l.WithTimestamp(time.RFC3339)
 	kiwi.LevelName = "l"
-	out := kiwi.UseOutput(buf, kiwi.UseJSON())
-	defer out.Close()
+	out := kiwi.SinkTo(buf, kiwi.UseJSON()).Start()
+	for i := 0; i < b.N; i++ {
+		l.AddInt("key", 1).AddFloat64("key2", 3.141592).AddString("key3", "string").AddBool("key4", false).Debug()
+		l.AddInt("key", 1).AddFloat64("key2", 3.141592).AddString("key3", "string").AddBool("key4", false).Info()
+		l.AddInt("key", 1).AddFloat64("key2", 3.141592).AddString("key3", "string").AddBool("key4", false).Warn()
+		l.AddInt("key", 1).AddFloat64("key2", 3.141592).AddString("key3", "string").AddBool("key4", false).Error()
+	}
+	b.StopTimer()
+	out.Close()
+}
+
+func BenchmarkLevelsKiwiTypedComplex_Logfmt(b *testing.B) {
+	buf := &bytes.Buffer{}
+	b.ResetTimer()
+	l := kiwi.New()
+	l.With("_n", "bench", "_p", pid)
+	l.WithTimestamp(time.RFC3339)
+	kiwi.LevelName = "l"
+	out := kiwi.SinkTo(buf, kiwi.UseLogfmt()).Start()
 	for i := 0; i < b.N; i++ {
 		l.AddInt("key", 1).AddStringer("obj", testObject).Debug()
 		l.AddInt("key", 1).AddStringer("obj", testObject).Info()
@@ -86,18 +101,35 @@ func BenchmarkLevelsKiwiTypedComplex(b *testing.B) {
 		l.AddInt("key", 1).AddStringer("obj", testObject).Error()
 	}
 	b.StopTimer()
+	out.Close()
 }
 
-func BenchmarkLevelsKiwiTypedHelpers(b *testing.B) {
+func BenchmarkLevelsKiwiTypedComplex_JSON(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
 	b.ResetTimer()
 	l := kiwi.New()
 	l.With("_n", "bench", "_p", pid)
 	l.WithTimestamp(time.RFC3339)
 	kiwi.LevelName = "l"
-	out := kiwi.UseOutput(buf, kiwi.UseJSON())
-	defer out.Close()
+	out := kiwi.SinkTo(buf, kiwi.UseJSON()).Start()
+	for i := 0; i < b.N; i++ {
+		l.AddInt("key", 1).AddStringer("obj", testObject).Debug()
+		l.AddInt("key", 1).AddStringer("obj", testObject).Info()
+		l.AddInt("key", 1).AddStringer("obj", testObject).Warn()
+		l.AddInt("key", 1).AddStringer("obj", testObject).Error()
+	}
+	b.StopTimer()
+	out.Close()
+}
+
+func BenchmarkLevelsKiwiTypedHelpers_Logfmt(b *testing.B) {
+	buf := &bytes.Buffer{}
+	b.ResetTimer()
+	l := kiwi.New()
+	l.With("_n", "bench", "_p", pid)
+	l.WithTimestamp(time.RFC3339)
+	kiwi.LevelName = "l"
+	out := kiwi.SinkTo(buf, kiwi.UseLogfmt()).Start()
 	for i := 0; i < b.N; i++ {
 		l.AddPairs(
 			kiwi.AsInt("key", 1),
@@ -121,18 +153,51 @@ func BenchmarkLevelsKiwiTypedHelpers(b *testing.B) {
 			kiwi.AsBool("key4", false)).Error()
 	}
 	b.StopTimer()
+	out.Close()
 }
 
-func BenchmarkLevelsKiwiTypedHelpersComplex(b *testing.B) {
+func BenchmarkLevelsKiwiTypedHelpers_JSON(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
 	b.ResetTimer()
 	l := kiwi.New()
 	l.With("_n", "bench", "_p", pid)
 	l.WithTimestamp(time.RFC3339)
 	kiwi.LevelName = "l"
-	out := kiwi.UseOutput(buf, kiwi.UseJSON())
-	defer out.Close()
+	out := kiwi.SinkTo(buf, kiwi.UseJSON()).Start()
+	for i := 0; i < b.N; i++ {
+		l.AddPairs(
+			kiwi.AsInt("key", 1),
+			kiwi.AsFloat64("key2", 3.141592),
+			kiwi.AsString("key3", "string"),
+			kiwi.AsBool("key4", false)).Debug()
+		l.AddPairs(
+			kiwi.AsInt("key", 1),
+			kiwi.AsFloat64("key2", 3.141592),
+			kiwi.AsString("key3", "string"),
+			kiwi.AsBool("key4", false)).Info()
+		l.AddPairs(
+			kiwi.AsInt("key", 1),
+			kiwi.AsFloat64("key2", 3.141592),
+			kiwi.AsString("key3", "string"),
+			kiwi.AsBool("key4", false)).Warn()
+		l.AddPairs(
+			kiwi.AsInt("key", 1),
+			kiwi.AsFloat64("key2", 3.141592),
+			kiwi.AsString("key3", "string"),
+			kiwi.AsBool("key4", false)).Error()
+	}
+	b.StopTimer()
+	out.Close()
+}
+
+func BenchmarkLevelsKiwiTypedHelpersComplex(b *testing.B) {
+	buf := &bytes.Buffer{}
+	b.ResetTimer()
+	l := kiwi.New()
+	l.With("_n", "bench", "_p", pid)
+	l.WithTimestamp(time.RFC3339)
+	kiwi.LevelName = "l"
+	out := kiwi.SinkTo(buf, kiwi.UseJSON()).Start()
 	for i := 0; i < b.N; i++ {
 		l.AddPairs(kiwi.AsInt("key", 1), kiwi.AsStringer("obj", testObject)).Debug()
 		l.AddPairs(kiwi.AsInt("key", 1), kiwi.AsStringer("obj", testObject)).Info()
@@ -140,18 +205,17 @@ func BenchmarkLevelsKiwiTypedHelpersComplex(b *testing.B) {
 		l.AddPairs(kiwi.AsInt("key", 1), kiwi.AsStringer("obj", testObject)).Error()
 	}
 	b.StopTimer()
+	out.Close()
 }
 
-func BenchmarkLevelsKiwi(b *testing.B) {
+func BenchmarkLevelsKiwi_Logfmt(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
 	b.ResetTimer()
 	l := kiwi.New()
 	l.With("_n", "bench", "_p", pid)
 	l.WithTimestamp(time.RFC3339)
 	kiwi.LevelName = "l"
-	out := kiwi.UseOutput(buf, kiwi.UseJSON())
-	defer out.Close()
+	out := kiwi.SinkTo(buf, kiwi.UseLogfmt()).Start()
 	for i := 0; i < b.N; i++ {
 		l.Debug("key", 1, "key2", 3.141592, "key3", "string", "key4", false)
 		l.Info("key", 1, "key2", 3.141592, "key3", "string", "key4", false)
@@ -159,18 +223,35 @@ func BenchmarkLevelsKiwi(b *testing.B) {
 		l.Error("key", 1, "key2", 3.141592, "key3", "string", "key4", false)
 	}
 	b.StopTimer()
+	out.Close()
 }
 
-func BenchmarkLevelsKiwiComplex(b *testing.B) {
+func BenchmarkLevelsKiwi_JSON(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
 	b.ResetTimer()
 	l := kiwi.New()
 	l.With("_n", "bench", "_p", pid)
 	l.WithTimestamp(time.RFC3339)
 	kiwi.LevelName = "l"
-	out := kiwi.UseOutput(buf, kiwi.UseJSON())
-	defer out.Close()
+	out := kiwi.SinkTo(buf, kiwi.UseJSON()).Start()
+	for i := 0; i < b.N; i++ {
+		l.Debug("key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Info("key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Warn("key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Error("key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+	}
+	b.StopTimer()
+	out.Close()
+}
+
+func BenchmarkLevelsKiwiComplex_Logfmt(b *testing.B) {
+	buf := &bytes.Buffer{}
+	b.ResetTimer()
+	l := kiwi.New()
+	l.With("_n", "bench", "_p", pid)
+	l.WithTimestamp(time.RFC3339)
+	kiwi.LevelName = "l"
+	out := kiwi.SinkTo(buf, kiwi.UseLogfmt()).Start()
 	for i := 0; i < b.N; i++ {
 		l.Debug("key", 1, "obj", testObject)
 		l.Info("key", 1, "obj", testObject)
@@ -178,11 +259,57 @@ func BenchmarkLevelsKiwiComplex(b *testing.B) {
 		l.Error("key", 1, "obj", testObject)
 	}
 	b.StopTimer()
+	out.Close()
 }
 
-func BenchmarkLevelsStdLog(b *testing.B) {
+func BenchmarkLevelsKiwiComplex_JSON(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
+	b.ResetTimer()
+	l := kiwi.New()
+	l.With("_n", "bench", "_p", pid)
+	l.WithTimestamp(time.RFC3339)
+	kiwi.LevelName = "l"
+	out := kiwi.SinkTo(buf, kiwi.UseJSON()).Start()
+	for i := 0; i < b.N; i++ {
+		l.Debug("key", 1, "obj", testObject)
+		l.Info("key", 1, "obj", testObject)
+		l.Warn("key", 1, "obj", testObject)
+		l.Error("key", 1, "obj", testObject)
+	}
+	b.StopTimer()
+	out.Close()
+}
+
+func BenchmarkLevelsKiwiGlobal_Logfmt(b *testing.B) {
+	buf := &bytes.Buffer{}
+	b.ResetTimer()
+	out := kiwi.SinkTo(buf, kiwi.UseLogfmt()).Start()
+	for i := 0; i < b.N; i++ {
+		kiwi.Log("t", time.Now().Format(time.RFC3339), "l", "debug", "_n", "bench", "_p", pid, "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		kiwi.Log("t", time.Now().Format(time.RFC3339), "l", "info", "_n", "bench", "_p", pid, "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		kiwi.Log("t", time.Now().Format(time.RFC3339), "l", "warn", "_n", "bench", "_p", pid, "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		kiwi.Log("t", time.Now().Format(time.RFC3339), "l", "error", "_n", "bench", "_p", pid, "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+	}
+	b.StopTimer()
+	out.Close()
+}
+
+func BenchmarkLevelsKiwiGlobal_JSON(b *testing.B) {
+	buf := &bytes.Buffer{}
+	b.ResetTimer()
+	out := kiwi.SinkTo(buf, kiwi.UseJSON()).Start()
+	for i := 0; i < b.N; i++ {
+		kiwi.Log("t", time.Now().Format(time.RFC3339), "l", "debug", "_n", "bench", "_p", pid, "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		kiwi.Log("t", time.Now().Format(time.RFC3339), "l", "info", "_n", "bench", "_p", pid, "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		kiwi.Log("t", time.Now().Format(time.RFC3339), "l", "warn", "_n", "bench", "_p", pid, "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		kiwi.Log("t", time.Now().Format(time.RFC3339), "l", "error", "_n", "bench", "_p", pid, "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+	}
+	b.StopTimer()
+	out.Close()
+}
+
+func BenchmarkLevelsStdLog_Text(b *testing.B) {
+	buf := &bytes.Buffer{}
 	b.ResetTimer()
 	l := stdLog.New(buf, "bench ", stdLog.LstdFlags)
 	for i := 0; i < b.N; i++ {
@@ -201,9 +328,8 @@ func BenchmarkLevelsStdLog(b *testing.B) {
 	b.StopTimer()
 }
 
-func BenchmarkLevelsStdLogComplex(b *testing.B) {
+func BenchmarkLevelsStdLogComplex_Text(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
 	b.ResetTimer()
 	l := stdLog.New(buf, "bench ", stdLog.LstdFlags)
 	for i := 0; i < b.N; i++ {
@@ -222,9 +348,23 @@ func BenchmarkLevelsStdLogComplex(b *testing.B) {
 	b.StopTimer()
 }
 
-func BenchmarkLevelsLogxi(b *testing.B) {
+func BenchmarkLevelsLogxi_Text(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
+	b.ResetTimer()
+	stdout := log.NewConcurrentWriter(buf)
+	l := log.NewLogger3(stdout, "bench", log.NewTextFormatter("bench"))
+	l.SetLevel(log.LevelDebug)
+	for i := 0; i < b.N; i++ {
+		l.Debug("debug", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Info("info", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Warn("warn", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Error("error", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+	}
+	b.StopTimer()
+}
+
+func BenchmarkLevelsLogxi_JSON(b *testing.B) {
+	buf := &bytes.Buffer{}
 	b.ResetTimer()
 	stdout := log.NewConcurrentWriter(buf)
 	l := log.NewLogger3(stdout, "bench", log.NewJSONFormatter("bench"))
@@ -238,9 +378,24 @@ func BenchmarkLevelsLogxi(b *testing.B) {
 	b.StopTimer()
 }
 
-func BenchmarkLevelsLogxiComplex(b *testing.B) {
+func BenchmarkLevelsLogxiComplex_Text(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
+	b.ResetTimer()
+	stdout := log.NewConcurrentWriter(buf)
+	l := log.NewLogger3(stdout, "bench", log.NewTextFormatter("bench"))
+	l.SetLevel(log.LevelDebug)
+	for i := 0; i < b.N; i++ {
+		l.Debug("debug", "key", 1, "obj", testObject)
+		l.Info("info", "key", 1, "obj", testObject)
+		l.Warn("warn", "key", 1, "obj", testObject)
+		l.Error("error", "key", 1, "obj", testObject)
+	}
+	b.StopTimer()
+
+}
+
+func BenchmarkLevelsLogxiComplex_JSON(b *testing.B) {
+	buf := &bytes.Buffer{}
 	b.ResetTimer()
 	stdout := log.NewConcurrentWriter(buf)
 	l := log.NewLogger3(stdout, "bench", log.NewJSONFormatter("bench"))
@@ -257,7 +412,6 @@ func BenchmarkLevelsLogxiComplex(b *testing.B) {
 
 func BenchmarkLevelsLogrus(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
 	b.ResetTimer()
 	l := logrus.New()
 	l.Out = buf
@@ -273,7 +427,6 @@ func BenchmarkLevelsLogrus(b *testing.B) {
 
 func BenchmarkLevelsLogrusComplex(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
 	b.ResetTimer()
 	l := logrus.New()
 	l.Out = buf
@@ -287,9 +440,22 @@ func BenchmarkLevelsLogrusComplex(b *testing.B) {
 	b.StopTimer()
 }
 
-func BenchmarkLevelsLog15(b *testing.B) {
+func BenchmarkLevelsLog15_Logfmt(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
+	b.ResetTimer()
+	l := log15.New(log15.Ctx{"_n": "bench", "_p": pid})
+	l.SetHandler(log15.SyncHandler(log15.StreamHandler(buf, log15.LogfmtFormat())))
+	for i := 0; i < b.N; i++ {
+		l.Debug("debug", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Info("info", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Warn("warn", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Error("error", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+	}
+	b.StopTimer()
+
+}
+func BenchmarkLevelsLog15_JSON(b *testing.B) {
+	buf := &bytes.Buffer{}
 	b.ResetTimer()
 	l := log15.New(log15.Ctx{"_n": "bench", "_p": pid})
 	l.SetHandler(log15.SyncHandler(log15.StreamHandler(buf, log15.JsonFormat())))
@@ -303,9 +469,22 @@ func BenchmarkLevelsLog15(b *testing.B) {
 
 }
 
-func BenchmarkLevelsLog15Complex(b *testing.B) {
+func BenchmarkLevelsLog15Complex_Logfmt(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
+	b.ResetTimer()
+	l := log15.New(log15.Ctx{"_n": "bench", "_p": pid})
+	l.SetHandler(log15.SyncHandler(log15.StreamHandler(buf, log15.LogfmtFormat())))
+	for i := 0; i < b.N; i++ {
+		l.Debug("debug", "key", 1, "obj", testObject)
+		l.Info("info", "key", 1, "obj", testObject)
+		l.Warn("warn", "key", 1, "obj", testObject)
+		l.Error("error", "key", 1, "obj", testObject)
+	}
+	b.StopTimer()
+}
+
+func BenchmarkLevelsLog15Complex_JSON(b *testing.B) {
+	buf := &bytes.Buffer{}
 	b.ResetTimer()
 	l := log15.New(log15.Ctx{"_n": "bench", "_p": pid})
 	l.SetHandler(log15.SyncHandler(log15.StreamHandler(buf, log15.JsonFormat())))
@@ -318,9 +497,8 @@ func BenchmarkLevelsLog15Complex(b *testing.B) {
 	b.StopTimer()
 }
 
-func BenchmarkLevelsGokit(b *testing.B) {
+func BenchmarkLevelsGokit_Logfmt(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
 	b.ResetTimer()
 	l := gokit.NewLogfmtLogger(gokit.NewSyncWriter(buf))
 	l = gokit.NewContext(l).With("_n", "bench", "_p", pid)
@@ -333,9 +511,22 @@ func BenchmarkLevelsGokit(b *testing.B) {
 	b.StopTimer()
 }
 
-func BenchmarkLevelsGokitComplex(b *testing.B) {
+func BenchmarkLevelsGokit_JSON(b *testing.B) {
 	buf := &bytes.Buffer{}
-	b.SetBytes(2)
+	b.ResetTimer()
+	l := gokit.NewJSONLogger(gokit.NewSyncWriter(buf))
+	l = gokit.NewContext(l).With("_n", "bench", "_p", pid)
+	for i := 0; i < b.N; i++ {
+		l.Log("l", "debug", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Log("l", "info", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Log("l", "warn", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+		l.Log("l", "error", "key", 1, "key2", 3.141592, "key3", "string", "key4", false)
+	}
+	b.StopTimer()
+}
+
+func BenchmarkLevelsGokitComplex_Logfmt(b *testing.B) {
+	buf := &bytes.Buffer{}
 	b.ResetTimer()
 	l := gokit.NewLogfmtLogger(gokit.NewSyncWriter(buf))
 	l = gokit.NewContext(l).With("_n", "bench", "_p", pid)
@@ -347,4 +538,18 @@ func BenchmarkLevelsGokitComplex(b *testing.B) {
 	}
 	b.StopTimer()
 
+}
+
+func BenchmarkLevelsGokitComplex_JSON(b *testing.B) {
+	buf := &bytes.Buffer{}
+	b.ResetTimer()
+	l := gokit.NewJSONLogger(gokit.NewSyncWriter(buf))
+	l = gokit.NewContext(l).With("_n", "bench", "_p", pid)
+	for i := 0; i < b.N; i++ {
+		l.Log("l", "debug", "key", 1, "obj", testObject)
+		l.Log("l", "info", "key", 1, "obj", testObject)
+		l.Log("l", "warn", "key", 1, "obj", testObject)
+		l.Log("l", "error", "key", 1, "obj", testObject)
+	}
+	b.StopTimer()
 }
